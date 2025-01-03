@@ -45,4 +45,4 @@ def create_hetero_graph_from_csv(file_path):
     print("Transaction node features dtype:", hetero_data['transaction'].x.dtype)
     print(hetero_data)
 
-    return hetero_data
+    return hetero_data, account_mapping
