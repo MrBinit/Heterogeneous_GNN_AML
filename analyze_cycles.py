@@ -8,35 +8,37 @@ def analyze_cycles(cycles, data, account_mapping):
         account_mapping (dict): Mapping from account IDs to internal indices.
 
     Returns:
-        list: Suspicious cycles with account IDs and transaction details.
+        list: Suspicious cycles with account IDs, transaction details, and cycle counts.
     """
     reverse_mapping = {v: k for k, v in account_mapping.items()}
+    account_cycle_counts = {}
     suspicious_cycles = []
 
     for cycle in cycles:
-        # Check transaction amounts in the cycle
-        amounts = []
+        # Check if it's a self-loop
         is_self_loop = len(cycle) == 1 or all(node == cycle[0] for node in cycle)
 
         if is_self_loop:
-            # Handle self-loops specifically
             node = cycle[0]
             original_account = reverse_mapping[node]
+            if original_account not in account_cycle_counts:
+                account_cycle_counts[original_account] = 0
+            account_cycle_counts[original_account] += 1
 
-            # Find the maximum transaction amount involving the account
+            # Find the maximum transaction amount for the account
             transactions = data['account', 'initiates', 'transaction'].edge_index
             mask = (transactions[0] == node) & (transactions[1] == node)
-            amounts.extend(data['transaction'].x[mask][:, 0].tolist())
-
+            amounts = data['transaction'].x[mask][:, 0].tolist()  
             max_amount = max(amounts) if amounts else 0
-            if max_amount > 10000:  # Example threshold
+
+            # Add to suspicious cycles if amount exceeds threshold
+            if max_amount > 10000:  
                 suspicious_cycles.append((original_account, max_amount))
         else:
-            # Handle other cycles if needed
             pass
-
     print(f"Suspicious Cycles (High-Value Transactions): {len(suspicious_cycles)}")
     for account, max_amount in suspicious_cycles:
-        print(f"Account: {account}, Max Transaction Amount: {max_amount}")
+        total_cycles = account_cycle_counts[account]
+        print(f"Account: {account}, Max Transaction Amount: {max_amount}, Total Cycle Count: {total_cycles}")
 
     return suspicious_cycles

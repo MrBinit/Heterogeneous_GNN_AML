@@ -27,6 +27,7 @@ def map_internal_to_account_id(cycles, account_mapping):
         mapped_cycles.append(unique_cycle)
 
     return mapped_cycles
+
 def main_detect_and_analyze(csv_file_path, model_path, threshold=0.5):
     # Load data
     hetero_data, account_mapping = create_hetero_graph_from_csv(csv_file_path)
